@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/opencode-antigravity-auth.svg)](https://www.npmjs.com/package/opencode-antigravity-auth)
 
-Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3-pro-high` and `claude-opus-4-5-thinking` with your Google credentials.
+Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3-pro-high` and `claude-4-5-opus-thinking` with your Google credentials.
 
 ## What you get
 
@@ -30,7 +30,6 @@ Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth
 3) **Declare the models you want**
 
 Add Antigravity models under the `provider.google.models` section of your config:
-
 ```json
 {
   "plugin": ["opencode-antigravity-auth"],
@@ -45,16 +44,16 @@ Add Antigravity models under the `provider.google.models` section of your config
           "name": "Gemini 3 Pro Low (Antigravity)",
           "limit": { "context": 1048576, "output": 65535 }
         },
-        "claude-sonnet-4-5": {
-          "name": "Claude Sonnet 4.5 (Antigravity)",
+        "claude-4-5-sonnet": {
+          "name": "Claude 4.5 Sonnet (Antigravity)",
           "limit": { "context": 200000, "output": 64000 }
         },
-        "claude-sonnet-4-5-thinking": {
-          "name": "Claude Sonnet 4.5 Thinking (Antigravity)",
+        "claude-4-5-sonnet-thinking": {
+          "name": "Claude 4.5 Sonnet Thinking (Antigravity)",
           "limit": { "context": 200000, "output": 64000 }
         },
-        "claude-opus-4-5-thinking": {
-          "name": "Claude Opus 4.5 Thinking (Antigravity)",
+        "claude-4-5-opus-thinking": {
+          "name": "Claude 4.5 Opus Thinking (Antigravity)",
           "limit": { "context": 200000, "output": 64000 }
         },
         "gpt-oss-120b-medium": {

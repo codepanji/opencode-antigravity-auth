@@ -23,35 +23,8 @@ function generateSyntheticProjectId(): string {
 }
 
 const STREAM_ACTION = "streamGenerateContent";
-const MODEL_FALLBACKS: Record<string, string> = {
-  "gemini-2.5-flash-image": "gemini-2.5-flash",
-  "gemini-2.5-flash": "gemini-3-pro-preview",
-  "models/gemini-2.5-flash": "gemini-3-pro-preview",
-  "gemini-3-pro-high": "gemini-3-pro-preview",
-  "gemini-3-pro-low": "gemini-3-pro-preview",
-  "claude-sonnet-4-5": "claude-4-5-sonnet",
-  "claude-sonnet-4-5-thinking": "claude-4-5-sonnet-thinking",
-  "claude-opus-4-5-thinking": "claude-4-5-opus-thinking",
-  "gpt-oss-120b-medium": "gpt-oss-120b-medium",
-};
-
-// Maps friendly/alias names to the upstream model IDs Antigravity expects.
-const MODEL_UPSTREAM_ALIASES: Record<string, string> = {
-  "gemini-2.5-computer-use-preview-10-2025": "rev19-uic3-1p",
-  "gemini-3-pro-image-preview": "gemini-3-pro-image",
-  "gemini-3-pro-preview": "gemini-3-pro-high",
-  "gemini-claude-sonnet-4-5": "claude-sonnet-4-5",
-  "gemini-claude-sonnet-4-5-thinking": "claude-sonnet-4-5-thinking",
-  "gemini-claude-opus-4-5-thinking": "claude-opus-4-5-thinking",
-  // Anthropic model name normalization (order expected by Antigravity)
-  "claude-4-5-sonnet": "claude-sonnet-4-5",
-  "claude-4-5-sonnet-thinking": "claude-sonnet-4-5-thinking",
-  "claude-4-5-opus-thinking": "claude-opus-4-5-thinking",
-};
-
 /**
- * Endpoint fallback order (daily → autopush → prod)
- * Matches CLIProxy and Vibeproxy behavior
+ * Detects requests headed to the Google Generative Language API so we can intercept them.
  */
 export function isGenerativeLanguageRequest(input: RequestInfo): input is string {
   return typeof input === "string" && input.includes("generativelanguage.googleapis.com");
@@ -121,8 +94,8 @@ export function prepareAntigravityRequest(
   }
 
   const [, rawModel = "", rawAction = ""] = match;
-  const effectiveModel = MODEL_FALLBACKS[rawModel] ?? rawModel;
-  const upstreamModel = MODEL_UPSTREAM_ALIASES[effectiveModel] ?? effectiveModel;
+  const effectiveModel = rawModel;
+  const upstreamModel = rawModel;
   const streaming = rawAction === STREAM_ACTION;
   const baseEndpoint = endpointOverride ?? ANTIGRAVITY_ENDPOINT;
   const transformedUrl = `${baseEndpoint}/v1internal:${rawAction}${
