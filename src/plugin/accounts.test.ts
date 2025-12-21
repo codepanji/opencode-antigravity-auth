@@ -102,7 +102,7 @@ describe("AccountManager", () => {
     const family: ModelFamily = "claude";
     const account = manager.getCurrentOrNextForFamily(family);
 
-    account!.rateLimitResetTimes[family] = Date.now() - 1000;
+    account!.rateLimitResetTimes[family] = Date.now() - 10000;
 
     const next = manager.getCurrentOrNextForFamily(family);
     expect(next?.parts.refreshToken).toBe("r1");

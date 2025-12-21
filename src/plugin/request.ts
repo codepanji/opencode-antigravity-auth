@@ -41,6 +41,7 @@ type SignedThinking = {
   signature: string;
 };
 
+const MIN_SIGNATURE_LENGTH = 50;
 const lastSignedThinkingBySessionId = new Map<string, SignedThinking>();
 
 function formatDebugLinesForThinking(lines: string[]): string {
@@ -199,11 +200,11 @@ function hasSignedThinkingPart(part: any): boolean {
   }
 
   if (part.thought === true) {
-    return typeof part.thoughtSignature === "string" && part.thoughtSignature.length >= 50;
+    return typeof part.thoughtSignature === "string" && part.thoughtSignature.length >= MIN_SIGNATURE_LENGTH;
   }
 
   if (part.type === "thinking" || part.type === "reasoning") {
-    return typeof part.signature === "string" && part.signature.length >= 50;
+    return typeof part.signature === "string" && part.signature.length >= MIN_SIGNATURE_LENGTH;
   }
 
   return false;
@@ -258,7 +259,7 @@ function ensureMessageThinkingSignature(block: any, sessionId: string): any {
     return block;
   }
 
-  if (typeof block.signature === "string" && block.signature.length >= 50) {
+  if (typeof block.signature === "string" && block.signature.length >= MIN_SIGNATURE_LENGTH) {
     return block;
   }
 
@@ -315,7 +316,7 @@ function hasSignedThinkingInMessages(messages: any[]): boolean {
         typeof block === "object" &&
         (block.type === "thinking" || block.type === "redacted_thinking") &&
         typeof block.signature === "string" &&
-        block.signature.length >= 50,
+        block.signature.length >= MIN_SIGNATURE_LENGTH,
     );
   });
 }
@@ -341,7 +342,7 @@ function ensureThinkingBeforeToolUseInMessages(messages: any[], sessionId: strin
       .map((b) => ensureMessageThinkingSignature(b, sessionId));
 
     const otherBlocks = blocks.filter((b) => !(b && typeof b === "object" && (b.type === "thinking" || b.type === "redacted_thinking")));
-    const hasSignedThinking = thinkingBlocks.some((b) => typeof b.signature === "string" && b.signature.length >= 50);
+    const hasSignedThinking = thinkingBlocks.some((b) => typeof b.signature === "string" && b.signature.length >= MIN_SIGNATURE_LENGTH);
 
     if (hasSignedThinking) {
       return { ...message, content: [...thinkingBlocks, ...otherBlocks] };

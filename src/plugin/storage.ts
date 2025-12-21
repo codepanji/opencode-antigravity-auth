@@ -100,7 +100,12 @@ export async function loadAccounts(): Promise<AccountStorage | null> {
     if (data.version === 1) {
       console.info("[opencode-antigravity-auth] Migrating account storage from v1 to v2");
       storage = migrateV1ToV2(data);
-      await saveAccounts(storage);
+      try {
+        await saveAccounts(storage);
+        console.info("[opencode-antigravity-auth] Migration to v2 complete");
+      } catch (saveError) {
+        console.warn("[opencode-antigravity-auth] Failed to persist migrated storage:", saveError);
+      }
     } else if (data.version === 2) {
       storage = data;
     } else {

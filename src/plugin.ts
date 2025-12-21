@@ -37,7 +37,24 @@ import type {
 } from "./plugin/types";
 
 const MAX_OAUTH_ACCOUNTS = 10;
+const MAX_WARMUP_SESSIONS = 1000;
 const warmupAttemptedSessionIds = new Set<string>();
+
+function trackWarmupSession(sessionId: string): boolean {
+  if (warmupAttemptedSessionIds.has(sessionId)) {
+    return false;
+  }
+  if (warmupAttemptedSessionIds.size >= MAX_WARMUP_SESSIONS) {
+    const first = warmupAttemptedSessionIds.values().next().value;
+    if (first) warmupAttemptedSessionIds.delete(first);
+  }
+  warmupAttemptedSessionIds.add(sessionId);
+  return true;
+}
+
+function untrackWarmupSession(sessionId: string): void {
+  warmupAttemptedSessionIds.delete(sessionId);
+}
 
 async function openBrowser(url: string): Promise<void> {
   try {
@@ -688,10 +705,9 @@ export const createAntigravityPlugin = (providerId: string) => async (
                 return;
               }
 
-              if (warmupAttemptedSessionIds.has(prepared.sessionId)) {
+              if (!trackWarmupSession(prepared.sessionId)) {
                 return;
               }
-              warmupAttemptedSessionIds.add(prepared.sessionId);
 
               const warmupBody = buildThinkingWarmupBody(
                 typeof prepared.init.body === "string" ? prepared.init.body : undefined,
@@ -738,6 +754,7 @@ export const createAntigravityPlugin = (providerId: string) => async (
                 await transformed.text();
                 pushDebug("thinking-warmup: done");
               } catch (error) {
+                untrackWarmupSession(prepared.sessionId);
                 pushDebug(
                   `thinking-warmup: failed ${error instanceof Error ? error.message : String(error)}`,
                 );
@@ -818,6 +835,7 @@ export const createAntigravityPlugin = (providerId: string) => async (
                   await logResponseBody(debugContext, response, 429);
 
                   if (isCapacityExhausted) {
+                    accountManager.markRateLimited(account, delayMs, family);
                     await showToast(
                       `Model capacity exhausted for ${family}. Retrying in ${waitTimeFormatted} (attempt ${attempt})...`,
                       "warning",
@@ -827,7 +845,6 @@ export const createAntigravityPlugin = (providerId: string) => async (
                   }
                   
                   const accountLabel = account.email || `Account ${account.index + 1}`;
-                  const accountCount = accountManager.getAccountCount();
 
                   // Short retry: if delay is small, just wait and retry same account
                   if (delayMs <= SHORT_RETRY_THRESHOLD_MS) {

@@ -241,12 +241,17 @@ function createLogWriter(filePath?: string): (line: string) => void {
     return () => {};
   }
 
-  const stream = createWriteStream(filePath, { flags: "a" });
-  return (line: string) => {
-    const timestamp = new Date().toISOString();
-    const formatted = `[${timestamp}] ${line}`;
-    stream.write(`${formatted}\n`);
-  };
+  try {
+    const stream = createWriteStream(filePath, { flags: "a" });
+    stream.on("error", () => {});
+    return (line: string) => {
+      const timestamp = new Date().toISOString();
+      const formatted = `[${timestamp}] ${line}`;
+      stream.write(`${formatted}\n`);
+    };
+  } catch {
+    return () => {};
+  }
 }
 
 export interface AccountDebugInfo {
